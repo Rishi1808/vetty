@@ -1,4 +1,4 @@
 fastapi
 uvicorn
 requests
-python-dotenv 
+python-dotenv  # Only if you're using dotenv to load env variables
