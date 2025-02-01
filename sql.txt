@@ -1,0 +1,75 @@
+-- SQL Answers for Vetty SQL Question
+
+
+-- 1. Count of purchases per month (excluding refunded purchases)
+SELECT strftime('%Y-%m', purchase_time) AS purchase_month, COUNT(*) AS purchase_count
+FROM transactions
+WHERE refund_time IS NULL
+GROUP BY purchase_month;
+
+-- 2. Count of stores with at least 5 transactions in October 2020
+SELECT store_id, COUNT(transaction_id) AS order_count
+FROM transactions
+WHERE strftime('%Y-%m', purchase_time) = '2020-10'
+GROUP BY store_id
+HAVING order_count >= 5;
+
+-- 3. Shortest interval from purchase to refund time per store
+SELECT store_id, MIN((julianday(refund_time) - julianday(purchase_time)) * 1440) AS shortest_refund_interval
+FROM transactions
+WHERE refund_time IS NOT NULL
+GROUP BY store_id;
+
+-- 4. Gross transaction value of every store’s first order
+SELECT t1.store_id, t1.transaction_id, t1.gross_transaction_value
+FROM transactions t1
+WHERE purchase_time = (
+    SELECT MIN(purchase_time)
+    FROM transactions t2
+    WHERE t1.store_id = t2.store_id
+);
+
+-- 5. Most popular item name ordered in first purchase
+SELECT i.item_name, COUNT(*) AS order_count
+FROM items i
+JOIN (
+    SELECT buyer_id, MIN(purchase_time) AS first_purchase_time
+    FROM transactions
+    GROUP BY buyer_id
+) first_purchases
+ON i.transaction_id = (
+    SELECT transaction_id 
+    FROM transactions 
+    WHERE buyer_id = first_purchases.buyer_id 
+    AND purchase_time = first_purchases.first_purchase_time
+)
+GROUP BY i.item_name
+ORDER BY order_count DESC
+LIMIT 1;
+
+-- 6. Create a refund eligibility flag (Refunds within 72 hours allowed)
+SELECT *,
+    CASE 
+        WHEN (julianday(refund_time) - julianday(purchase_time)) * 24 <= 72 THEN 'Eligible'
+        ELSE 'Not Eligible'
+    END AS refund_status
+FROM transactions;
+
+-- 7. Rank purchases per buyer and filter only second purchase
+SELECT buyer_id, transaction_id, purchase_time
+FROM (
+    SELECT buyer_id, transaction_id, purchase_time,
+           RANK() OVER (PARTITION BY buyer_id ORDER BY purchase_time) AS purchase_rank
+    FROM transactions
+    WHERE refund_time IS NULL
+) ranked_purchases
+WHERE purchase_rank = 2;
+
+-- 8. Find the second transaction time per buyer without using MIN/MAX
+SELECT buyer_id, transaction_id, purchase_time
+FROM (
+    SELECT buyer_id, transaction_id, purchase_time,
+           ROW_NUMBER() OVER (PARTITION BY buyer_id ORDER BY purchase_time) AS purchase_order
+    FROM transactions
+) ordered_purchases
+WHERE purchase_order = 2;

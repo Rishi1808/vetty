@@ -1,8 +1,0 @@
-version: "3.8"
-services:
-  crypto-api:
-    build: .
-    ports:
-      - "8000:8000"
-    environment:
-      - API_KEY=your-secure-api-key
