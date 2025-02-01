@@ -1,4 +1,11 @@
-fastapi
-uvicorn
-requests
-python-dotenv  # Only if you're using dotenv to load env variables
+# Core dependencies
+fastapi==0.109.0
+uvicorn==0.27.0
+
+# Additional dependencies
+httpx==0.26.0  # For making HTTP requests (e.g., to CoinGecko API)
+python-dotenv==1.0.0  # For loading environment variables
+pydantic==2.5.3  # For data validation (included with FastAPI but can be explicitly added)
+pytest==7.4.4  # For unit testing
+pytest-cov==4.1.0  # For test coverage reporting
+flake8==6.1.0  # For linting
