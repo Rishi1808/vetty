@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.routes import coins, categories  # Ensure this matches your directory structure
+from app.routes import coins, categories  # Make sure the path is correct
 
 app = FastAPI(
     title="Crypto Market API",
@@ -7,6 +7,6 @@ app = FastAPI(
     version="1.0",
 )
 
-# Make sure you're including the routers correctly
+# Include the routes here
 app.include_router(coins.router)
 app.include_router(categories.router)
